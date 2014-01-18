@@ -5,7 +5,8 @@
     "angular": "1.2.5"
   },
   "devDependencies": {
-    "angular-mocks": "1.2.5"
+    "angular-mocks": "1.2.5",
+    "thk-notifications-mock": "0.0.*"
   },
   "ignore": [
     "**/.*",
@@ -13,8 +14,5 @@
     "bower_components",
     "test",
     "tests"
-  ],
-  "resolutions": {
-    "angular": "1.2.5"
-  }
+  ]
 }
