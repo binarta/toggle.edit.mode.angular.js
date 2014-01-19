@@ -41,7 +41,7 @@ describe('toggle.edit.mode', function () {
 
                 describe('when there are dirty items', function () {
                     beforeEach(function () {
-                        scope.dirtyItems = 1;
+                        scope.dirtyItems = ['item-1'];
                         scope.toggleEditMode();
                     });
 
@@ -81,30 +81,36 @@ describe('toggle.edit.mode', function () {
                 });
             });
 
-            describe('when edit mode enabled and edit.mode.lock received', function () {
+            describe('when edit.mode.lock received', function () {
                 beforeEach(function () {
-                    scope.toggleEditMode();
+                    registry['edit.mode.lock']('item-1');
                 });
 
-                describe('and received add topic', function () {
-                    beforeEach(function () {
-                        registry['edit.mode.lock']('add');
-                    });
-
-                    it('increase dirty item count', function () {
-                        expect(scope.dirtyItems).toEqual(1);
-                    });
+                it('add to dirty item list', function () {
+                    expect(scope.dirtyItems[0]).toEqual('item-1');
                 });
 
-                describe('and received remove topic', function () {
-                    beforeEach(function () {
-                        scope.dirtyItems = 2;
-                        registry['edit.mode.lock']('remove');
-                    });
+                it('do not add duplicates', function () {
+                    registry['edit.mode.lock']('item-1');
 
-                    it('decrease dirty item count', function () {
-                        expect(scope.dirtyItems).toEqual(1);
-                    });
+                    expect(scope.dirtyItems.length).toEqual(1);
+                });
+            });
+
+            describe('when edit.mode.unlock received', function () {
+                beforeEach(function () {
+                    scope.dirtyItems = ['item-1', 'item-2'];
+                    registry['edit.mode.unlock']('item-2');
+                });
+
+                it('remove from dirty item list', function () {
+                    expect(scope.dirtyItems.length).toEqual(1);
+                });
+
+                it('removing unknown item should do nothing', function () {
+                    registry['edit.mode.unlock']('unknown');
+
+                    expect(scope.dirtyItems.length).toEqual(1);
                 });
             });
         });

@@ -8,10 +8,10 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry) {
         templateUrl: 'app/partials/toggle-edit-mode.html',
         link: function (scope) {
             scope.editMode = false;
-            scope.dirtyItems = 0;
+            scope.dirtyItems = [];
 
             scope.toggleEditMode = function () {
-                scope.dirtyItems > 0 ? raiseLockedWarning() : toggleEditMode();
+                scope.dirtyItems.length > 0 ? raiseLockedWarning() : toggleEditMode();
             };
 
             function raiseLockedWarning() {
@@ -34,10 +34,12 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry) {
             });
 
             topicRegistry.subscribe('edit.mode.lock', function (topic) {
-                if (scope.editMode) {
-                    if (topic == 'add') scope.dirtyItems++;
-                    if (topic == 'remove') scope.dirtyItems--;
-                }
+                if (scope.dirtyItems.indexOf(topic) == -1) scope.dirtyItems.push(topic);
+            });
+
+            topicRegistry.subscribe('edit.mode.unlock', function (topic) {
+                var index = scope.dirtyItems.indexOf(topic);
+                if (index != -1) scope.dirtyItems.splice(index, 1);
             });
         }
     };
