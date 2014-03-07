@@ -1,11 +1,15 @@
 angular.module('toggle.edit.mode', ['notifications'])
-    .directive('toggleEditMode', ['topicMessageDispatcher', 'topicRegistry', '$timeout', ToggleEditModeDirectiveFactory]);
+    .directive('toggleEditMode', ['topicMessageDispatcher', 'topicRegistry', '$rootScope', ToggleEditModeDirectiveFactory])
+    .directive('editModeOn', ['topicRegistry', EditModeOnDirectiveFactory])
+    .directive('editModeOff', ['topicRegistry', EditModeOffDirectiveFactory]);
 
-function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry) {
+function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $rootScope) {
     return {
         restrict: 'E',
         scope: {},
-        templateUrl: 'app/partials/toggle-edit-mode.html',
+        templateUrl: function() {
+            return $rootScope.toggleEditModeTemplateUrl ? $rootScope.toggleEditModeTemplateUrl : 'app/partials/toggle-edit-mode.html';
+        },
         link: function (scope) {
             scope.editMode = false;
             scope.dirtyItems = [];
@@ -43,4 +47,34 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry) {
             });
         }
     };
+}
+
+function EditModeOnDirectiveFactory(topicRegistry) {
+    return {
+        restrict:'A',
+        link: function(scope, el, attrs) {
+            var handler = function (editMode) {
+                if (editMode) scope.$eval(attrs.editModeOn);
+            };
+            topicRegistry.subscribe('edit.mode', handler);
+            scope.$on('$destroy', function() {
+                topicRegistry.unsubscribe('edit.mode', handler);
+            });
+        }
+    }
+}
+
+function EditModeOffDirectiveFactory(topicRegistry) {
+    return {
+        restrict:'A',
+        link: function(scope, el, attrs) {
+            var handler = function (editMode) {
+                if (!editMode) scope.$eval(attrs.editModeOff);
+            };
+            topicRegistry.subscribe('edit.mode', handler);
+            scope.$on('$destroy', function() {
+                topicRegistry.unsubscribe('edit.mode', handler);
+            });
+        }
+    }
 }
