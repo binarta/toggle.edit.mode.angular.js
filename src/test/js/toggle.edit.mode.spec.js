@@ -1,12 +1,16 @@
 describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
-    describe('toggleEditMode directive', function() {
-        var scope, directive, topics, registry;
+    describe('toggleEditMode directive', function () {
+        var scope, directive, topics, registry, route;
 
-        beforeEach(inject(function(topicMessageDispatcher, topicRegistry, $rootScope) {
+        beforeEach(inject(function (topicMessageDispatcher, topicRegistry) {
             scope = {};
-            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $rootScope);
+            route = {routes: []};
+            route.routes['/template/toggle-edit-mode'] = {
+                templateUrl: 'toggle-edit-mode.html'
+            };
+            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, route);
         }));
 
         it('restricted to', function () {
@@ -14,17 +18,11 @@ describe('toggle.edit.mode', function () {
         });
 
         it('template url', function () {
-            expect(directive.templateUrl()).toEqual('app/partials/toggle-edit-mode.html');
+            expect(directive.templateUrl).toEqual('toggle-edit-mode.html');
         });
 
-        it('template url can be overridden by rootScope', inject(function ($rootScope) {
-            $rootScope.toggleEditModeTemplateUrl = 'overridden-template.html';
-
-            expect(directive.templateUrl()).toEqual('overridden-template.html');
-        }));
-
         describe('on link', function () {
-            beforeEach(inject(function(topicRegistryMock, topicMessageDispatcherMock) {
+            beforeEach(inject(function (topicRegistryMock, topicMessageDispatcherMock) {
                 registry = topicRegistryMock;
                 topics = topicMessageDispatcherMock;
                 directive.link(scope);
@@ -126,7 +124,7 @@ describe('toggle.edit.mode', function () {
     describe('EditModeOn directive', function () {
         var directive, registry, scope, attrs, handler;
 
-        beforeEach(inject(function(topicRegistry, topicRegistryMock, $rootScope) {
+        beforeEach(inject(function (topicRegistry, topicRegistryMock, $rootScope) {
             scope = $rootScope.$new();
             registry = topicRegistryMock;
             directive = EditModeOnDirectiveFactory(topicRegistry);
@@ -180,7 +178,7 @@ describe('toggle.edit.mode', function () {
     describe('EditModeOff directive', function () {
         var directive, registry, scope, attrs, handler;
 
-        beforeEach(inject(function(topicRegistry, topicRegistryMock, $rootScope) {
+        beforeEach(inject(function (topicRegistry, topicRegistryMock, $rootScope) {
             scope = $rootScope.$new();
             registry = topicRegistryMock;
             directive = EditModeOffDirectiveFactory(topicRegistry);

@@ -1,15 +1,13 @@
 angular.module('toggle.edit.mode', ['notifications'])
-    .directive('toggleEditMode', ['topicMessageDispatcher', 'topicRegistry', '$rootScope', ToggleEditModeDirectiveFactory])
+    .directive('toggleEditMode', ['topicMessageDispatcher', 'topicRegistry', '$route', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['topicRegistry', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['topicRegistry', EditModeOffDirectiveFactory]);
 
-function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $rootScope) {
+function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $route) {
     return {
         restrict: 'E',
         scope: {},
-        templateUrl: function() {
-            return $rootScope.toggleEditModeTemplateUrl ? $rootScope.toggleEditModeTemplateUrl : 'app/partials/toggle-edit-mode.html';
-        },
+        templateUrl: $route.routes['/template/toggle-edit-mode'].templateUrl,
         link: function (scope) {
             scope.editMode = false;
             scope.dirtyItems = [];
