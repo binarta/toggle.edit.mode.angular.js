@@ -1,13 +1,15 @@
 angular.module('toggle.edit.mode', ['notifications'])
-    .directive('toggleEditMode', ['topicMessageDispatcher', 'topicRegistry', '$route', ToggleEditModeDirectiveFactory])
-    .directive('editModeOn', ['topicRegistry', EditModeOnDirectiveFactory])
-    .directive('editModeOff', ['topicRegistry', EditModeOffDirectiveFactory]);
+    .directive('toggleEditMode', ['topicMessageDispatcher', 'ngRegisterTopicHandler', 'config', ToggleEditModeDirectiveFactory])
+    .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
+    .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
 
-function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $route) {
+function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config) {
+    var componentsDir = config.componentsDir || 'bower_components';
+
     return {
         restrict: 'E',
         scope: {},
-        templateUrl: $route.routes['/template/toggle-edit-mode'].templateUrl,
+        templateUrl: componentsDir + '/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html',
         link: function (scope) {
             scope.editMode = false;
             scope.dirtyItems = [];
@@ -29,17 +31,17 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $
                 topicMessageDispatcher.firePersistently('edit.mode', scope.editMode);
             }
 
-            topicRegistry.subscribe('checkpoint.signout', function () {
+            ngRegisterTopicHandler(scope, 'checkpoint.signout', function () {
                 if (scope.editMode) {
                     scope.toggleEditMode();
                 }
             });
 
-            topicRegistry.subscribe('edit.mode.lock', function (topic) {
+            ngRegisterTopicHandler(scope, 'edit.mode.lock', function (topic) {
                 if (scope.dirtyItems.indexOf(topic) == -1) scope.dirtyItems.push(topic);
             });
 
-            topicRegistry.subscribe('edit.mode.unlock', function (topic) {
+            ngRegisterTopicHandler(scope, 'edit.mode.unlock', function (topic) {
                 var index = scope.dirtyItems.indexOf(topic);
                 if (index != -1) scope.dirtyItems.splice(index, 1);
             });
@@ -47,31 +49,23 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, $
     };
 }
 
-function EditModeOnDirectiveFactory(topicRegistry) {
+function EditModeOnDirectiveFactory(ngRegisterTopicHandler) {
     return {
         restrict:'A',
         link: function(scope, el, attrs) {
-            var handler = function (editMode) {
+            ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 if (editMode) scope.$eval(attrs.editModeOn);
-            };
-            topicRegistry.subscribe('edit.mode', handler);
-            scope.$on('$destroy', function() {
-                topicRegistry.unsubscribe('edit.mode', handler);
             });
         }
     }
 }
 
-function EditModeOffDirectiveFactory(topicRegistry) {
+function EditModeOffDirectiveFactory(ngRegisterTopicHandler) {
     return {
         restrict:'A',
         link: function(scope, el, attrs) {
-            var handler = function (editMode) {
+            ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 if (!editMode) scope.$eval(attrs.editModeOff);
-            };
-            topicRegistry.subscribe('edit.mode', handler);
-            scope.$on('$destroy', function() {
-                topicRegistry.unsubscribe('edit.mode', handler);
             });
         }
     }

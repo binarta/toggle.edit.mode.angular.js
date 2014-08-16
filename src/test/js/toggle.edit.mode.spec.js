@@ -2,23 +2,27 @@ describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
     describe('toggleEditMode directive', function () {
-        var scope, directive, topics, registry, route;
+        var scope, directive, topics, registry, config;
 
-        beforeEach(inject(function (topicMessageDispatcher, topicRegistry) {
+        beforeEach(inject(function (topicMessageDispatcher, ngRegisterTopicHandler) {
             scope = {};
-            route = {routes: []};
-            route.routes['/template/toggle-edit-mode'] = {
-                templateUrl: 'toggle-edit-mode.html'
-            };
-            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, topicRegistry, route);
+            config = {};
+            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config);
         }));
 
         it('restricted to', function () {
             expect(directive.restrict).toEqual('E');
         });
 
-        it('template url', function () {
-            expect(directive.templateUrl).toEqual('toggle-edit-mode.html');
+        it('default template url', function () {
+            expect(directive.templateUrl).toEqual('bower_components/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html');
+        });
+
+        it('template url with specific components directory', function () {
+            config.componentsDir = 'components';
+            directive = ToggleEditModeDirectiveFactory(null, null, config);
+
+            expect(directive.templateUrl).toEqual('components/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html');
         });
 
         describe('on link', function () {
@@ -124,10 +128,10 @@ describe('toggle.edit.mode', function () {
     describe('EditModeOn directive', function () {
         var directive, registry, scope, attrs, handler;
 
-        beforeEach(inject(function (topicRegistry, topicRegistryMock, $rootScope) {
+        beforeEach(inject(function (ngRegisterTopicHandler, topicRegistryMock, $rootScope) {
             scope = $rootScope.$new();
             registry = topicRegistryMock;
-            directive = EditModeOnDirectiveFactory(topicRegistry);
+            directive = EditModeOnDirectiveFactory(ngRegisterTopicHandler);
         }));
 
         it('restrict to attribute', function () {
@@ -161,27 +165,16 @@ describe('toggle.edit.mode', function () {
 
                 expect(handler).toEqual(true);
             });
-
-            it('and scope listens to destroy event', function () {
-                expect(scope.on['$destroy']).toBeDefined();
-            });
-
-            it('when scope is destroyed unsubscribes edit.mode', function () {
-                scope.on['$destroy']();
-
-                expect(registry['edit.mode']).toBeUndefined();
-            });
-
         });
     });
 
     describe('EditModeOff directive', function () {
         var directive, registry, scope, attrs, handler;
 
-        beforeEach(inject(function (topicRegistry, topicRegistryMock, $rootScope) {
+        beforeEach(inject(function (ngRegisterTopicHandler, topicRegistryMock, $rootScope) {
             scope = $rootScope.$new();
             registry = topicRegistryMock;
-            directive = EditModeOffDirectiveFactory(topicRegistry);
+            directive = EditModeOffDirectiveFactory(ngRegisterTopicHandler);
         }));
 
         it('restrict to attribute', function () {
@@ -215,17 +208,6 @@ describe('toggle.edit.mode', function () {
 
                 expect(handler).toEqual(true);
             });
-
-            it('and scope listens to destroy event', function () {
-                expect(scope.on['$destroy']).toBeDefined();
-            });
-
-            it('when scope is destroyed unsubscribes edit.mode', function () {
-                scope.on['$destroy']();
-
-                expect(registry['edit.mode']).toBeUndefined();
-            });
-
         });
     });
 });
