@@ -2,12 +2,13 @@ describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
     describe('toggleEditMode directive', function () {
-        var scope, directive, topics, registry, config;
+        var scope, directive, topics, registry, config, $rootScope;
 
-        beforeEach(inject(function (topicMessageDispatcher, ngRegisterTopicHandler) {
+        beforeEach(inject(function (topicMessageDispatcher, ngRegisterTopicHandler, _$rootScope_) {
+            $rootScope = _$rootScope_;
             scope = {};
             config = {};
-            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config);
+            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config, $rootScope);
         }));
 
         it('restricted to', function () {
@@ -39,6 +40,10 @@ describe('toggle.edit.mode', function () {
 
                 it('raise toggle edit mode enabled', function () {
                     expect(topics.persistent['edit.mode']).toEqual(true);
+                });
+
+                it('editing is enabled on rootScope', function () {
+                    expect($rootScope.editing).toBeTruthy();
                 });
             });
 
@@ -86,6 +91,7 @@ describe('toggle.edit.mode', function () {
 
                     expect(scope.editMode).toEqual(false);
                     expect(topics.persistent['edit.mode']).toEqual(false);
+                    expect($rootScope.editing).toBeFalsy();
                 });
             });
 

@@ -1,9 +1,9 @@
 angular.module('toggle.edit.mode', ['notifications'])
-    .directive('toggleEditMode', ['topicMessageDispatcher', 'ngRegisterTopicHandler', 'config', ToggleEditModeDirectiveFactory])
+    .directive('toggleEditMode', ['topicMessageDispatcher', 'ngRegisterTopicHandler', 'config', '$rootScope', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
 
-function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config) {
+function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config, $rootScope) {
     var componentsDir = config.componentsDir || 'bower_components';
 
     return {
@@ -29,6 +29,7 @@ function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicH
             function toggleEditMode() {
                 scope.editMode = !scope.editMode;
                 topicMessageDispatcher.firePersistently('edit.mode', scope.editMode);
+                $rootScope.editing = scope.editMode;
             }
 
             ngRegisterTopicHandler(scope, 'checkpoint.signout', function () {
