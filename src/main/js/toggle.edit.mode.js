@@ -1,15 +1,12 @@
 angular.module('toggle.edit.mode', ['notifications'])
-    .directive('toggleEditMode', ['topicMessageDispatcher', 'ngRegisterTopicHandler', 'config', '$rootScope', ToggleEditModeDirectiveFactory])
+    .directive('toggleEditMode', ['topicMessageDispatcher', 'ngRegisterTopicHandler', '$rootScope', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
 
-function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config, $rootScope) {
-    var componentsDir = config.componentsDir || 'bower_components';
-
+function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, $rootScope) {
     return {
         restrict: 'E',
-        scope: {},
-        templateUrl: componentsDir + '/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html',
+        scope: true,
         link: function (scope) {
             scope.editMode = false;
             scope.dirtyItems = [];

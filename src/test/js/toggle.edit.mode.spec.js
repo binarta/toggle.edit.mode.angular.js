@@ -2,28 +2,16 @@ describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
     describe('toggleEditMode directive', function () {
-        var scope, directive, topics, registry, config, $rootScope;
+        var scope, directive, topics, registry, $rootScope;
 
         beforeEach(inject(function (topicMessageDispatcher, ngRegisterTopicHandler, _$rootScope_) {
             $rootScope = _$rootScope_;
             scope = {};
-            config = {};
-            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, config, $rootScope);
+            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, $rootScope);
         }));
 
         it('restricted to', function () {
             expect(directive.restrict).toEqual('E');
-        });
-
-        it('default template url', function () {
-            expect(directive.templateUrl).toEqual('bower_components/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html');
-        });
-
-        it('template url with specific components directory', function () {
-            config.componentsDir = 'components';
-            directive = ToggleEditModeDirectiveFactory(null, null, config);
-
-            expect(directive.templateUrl).toEqual('components/binarta.toggle.edit.mode.angular/template/toggle-edit-mode.html');
         });
 
         describe('on link', function () {
