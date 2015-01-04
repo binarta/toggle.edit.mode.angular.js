@@ -11,7 +11,7 @@ describe('toggle.edit.mode', function () {
         }));
 
         it('restricted to', function () {
-            expect(directive.restrict).toEqual('E');
+            expect(directive.restrict).toEqual(['E', 'A']);
         });
 
         describe('on link', function () {

@@ -5,7 +5,7 @@ angular.module('toggle.edit.mode', ['notifications'])
 
 function ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, $rootScope) {
     return {
-        restrict: 'E',
+        restrict: ['E', 'A'],
         scope: true,
         link: function (scope) {
             scope.editMode = false;
