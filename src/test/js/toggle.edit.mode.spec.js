@@ -1,13 +1,198 @@
 describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
-    describe('toggleEditMode directive', function () {
-        var scope, directive, topics, registry, $rootScope;
+    describe('editMode service', function () {
+        var editMode, $rootScope, registry, topics;
 
-        beforeEach(inject(function (topicMessageDispatcher, ngRegisterTopicHandler, _$rootScope_) {
+        beforeEach(inject(function (_editMode_, _$rootScope_, topicRegistryMock, topicMessageDispatcherMock) {
+            editMode = _editMode_;
             $rootScope = _$rootScope_;
+            registry = topicRegistryMock;
+            topics = topicMessageDispatcherMock;
+        }));
+
+        it('service exists', function () {
+            expect(editMode).toBeDefined();
+        });
+
+        it('editing is not enabled', function () {
+            expect($rootScope.editing).toEqual(false);
+        });
+
+        describe('enable edit mode', function () {
+            beforeEach(function () {
+                editMode.enable();
+            });
+
+            it('editing is on rootScope', function () {
+                expect($rootScope.editing).toEqual(true);
+            });
+
+            it('raise toggle edit mode enabled', function () {
+                expect(topics.persistent['edit.mode']).toEqual(true);
+            });
+        });
+
+        describe('disable edit mode', function () {
+            beforeEach(function () {
+                editMode.enable();
+            });
+
+            it('raise toggle edit mode disabled', function () {
+                editMode.disable();
+
+                expect(topics.persistent['edit.mode']).toEqual(false);
+            });
+
+            describe('when there are dirty items', function () {
+                beforeEach(function () {
+                    registry['edit.mode.lock']('item-1');
+
+                    editMode.disable();
+                });
+
+                it('raise a warning notification', function () {
+                    expect(topics['system.warning']).toEqual({
+                        code: 'edit.mode.locked',
+                        default: 'Warning. There are unsaved changes.'
+                    });
+                });
+
+
+                it('raise edit mode lock is locked', function () {
+                    expect(topics['edit.mode.locked']).toEqual('ok');
+                });
+            });
+        });
+
+        describe('when edit mode enabled and checkpoint.signout received', function () {
+            beforeEach(function () {
+                editMode.enable();
+            });
+
+            it('disable edit mode', function () {
+                registry['checkpoint.signout']();
+
+                expect($rootScope.editing).toEqual(false);
+                expect(topics.persistent['edit.mode']).toEqual(false);
+            });
+        });
+
+        describe('when edit.mode.unlock received', function () {
+            beforeEach(function () {
+                editMode.enable();
+
+                registry['edit.mode.lock']('item-1');
+
+                registry['edit.mode.unlock']('item-1');
+            });
+
+            it('can disable', function () {
+                editMode.disable();
+
+                expect($rootScope.editing).toEqual(false);
+            });
+
+        });
+    });
+
+    describe('editModeRenderer service', function () {
+        var editModeRenderer, registry, scope, argsSpy;
+
+        beforeEach(inject(function (_editModeRenderer_, topicRegistryMock, $rootScope) {
+            editModeRenderer = _editModeRenderer_;
+            registry = topicRegistryMock;
+            scope = $rootScope.$new();
+            argsSpy = {};
+            scope.$on('edit.mode.renderer', function (event, args) {
+                argsSpy = args;
+            });
+        }));
+
+        it('service exists', function () {
+            expect(editModeRenderer).toBeDefined();
+        });
+
+        describe('on open', function () {
+            beforeEach(function () {
+                editModeRenderer.open({
+                    ctx: 'ctx',
+                    template: 'template'
+                });
+            });
+
+            it('edit.mode.renderer is broadcasted on rootScope', function () {
+                expect(argsSpy).toEqual({
+                    open: true,
+                    ctx: 'ctx',
+                    template: 'template'
+                });
+            });
+        });
+
+        describe('on close', function () {
+            beforeEach(function () {
+                editModeRenderer.close();
+            });
+
+            it('edit.mode.renderer is broadcasted on rootScope', function () {
+                expect(argsSpy).toEqual({
+                    open: false
+                });
+            });
+        });
+
+        describe('on edit.mode event', function () {
+            beforeEach(function () {
+                registry['edit.mode'](false);
+            });
+
+            it('close renderer', function () {
+                expect(argsSpy).toEqual({
+                    open: false
+                });
+            });
+        });
+    });
+
+    describe('editModeRenderer directive', function () {
+        var scope, $rootScope, element;
+
+        beforeEach(inject(function (_$rootScope_, $compile) {
+            element = angular.element('<div edit-mode-renderer></div>');
+            $rootScope = _$rootScope_;
+            scope = $rootScope.$new();
+            $compile(element)(scope);
+        }));
+
+        describe('when edit.mode.renderer is broadcasted', function () {
+            beforeEach(function () {
+                $rootScope.$broadcast('edit.mode.renderer', {
+                    open: true,
+                    ctx: 'value',
+                    template: '<p>{{ctx}}</p>'
+                });
+                scope.$digest();
+            });
+
+            it('scope is available', function () {
+                expect(scope.ctx).toEqual('value');
+            });
+
+            it('element is compiled', function () {
+                expect(element.html()).toEqual('<p class="ng-scope ng-binding">value</p>');
+            });
+        });
+    });
+
+    describe('toggleEditMode directive', function () {
+        var scope, directive, $rootScope, editMode;
+
+        beforeEach(inject(function (_$rootScope_, _editMode_) {
+            $rootScope = _$rootScope_;
+            editMode = _editMode_;
             scope = {};
-            directive = ToggleEditModeDirectiveFactory(topicMessageDispatcher, ngRegisterTopicHandler, $rootScope);
+            directive = ToggleEditModeDirectiveFactory($rootScope, editMode);
         }));
 
         it('restricted to', function () {
@@ -15,111 +200,37 @@ describe('toggle.edit.mode', function () {
         });
 
         describe('on link', function () {
-            beforeEach(inject(function (topicRegistryMock, topicMessageDispatcherMock) {
-                registry = topicRegistryMock;
-                topics = topicMessageDispatcherMock;
+            beforeEach(function () {
                 directive.link(scope);
-            }));
+            });
 
-            describe('enable edit mode', function () {
+            it ('editing is false', function () {
+                expect($rootScope.editing).toEqual(false);
+            });
+
+            describe('toggle edit mode', function () {
                 beforeEach(function () {
                     scope.toggleEditMode();
                 });
 
-                it('raise toggle edit mode enabled', function () {
-                    expect(topics.persistent['edit.mode']).toEqual(true);
+                it ('editing is true', function () {
+                    expect($rootScope.editing).toEqual(true);
                 });
 
-                it('editing is enabled on rootScope', function () {
-                    expect($rootScope.editing).toBeTruthy();
-                });
-            });
-
-            describe('disable edit mode', function () {
-                beforeEach(function () {
-                    scope.editMode = true;
-                });
-
-                describe('when there are dirty items', function () {
+                describe('toggle again', function () {
                     beforeEach(function () {
-                        scope.dirtyItems = ['item-1'];
                         scope.toggleEditMode();
                     });
 
-                    it('raise a warning notification', function () {
-                        expect(topics['system.warning']).toEqual({
-                            code: 'edit.mode.locked',
-                            default: 'Warning. There are unsaved changes.'
-                        });
+                    it ('editing is false', function () {
+                        expect($rootScope.editing).toEqual(false);
                     });
-
-                    it('raise edit mode lock is locked', function () {
-                        expect(topics['edit.mode.locked']).toEqual('ok');
-                    });
-                });
-
-                it('raise toggle edit mode disabled', function () {
-                    scope.toggleEditMode();
-
-                    expect(topics.persistent['edit.mode']).toEqual(false);
-                });
-            });
-
-            describe('when edit mode enabled and checkpoint.signout received', function () {
-                beforeEach(function () {
-                    scope.toggleEditMode();
-                });
-
-                it('edit mode should be enabled', function () {
-                    expect(scope.editMode).toEqual(true);
-                });
-
-                it('disable edit mode', function () {
-                    registry['checkpoint.signout']();
-
-                    expect(scope.editMode).toEqual(false);
-                    expect(topics.persistent['edit.mode']).toEqual(false);
-                    expect($rootScope.editing).toBeFalsy();
-                });
-            });
-
-            describe('when edit.mode.lock received', function () {
-                beforeEach(function () {
-                    registry['edit.mode.lock']('item-1');
-                });
-
-                it('add to dirty item list', function () {
-                    expect(scope.dirtyItems[0]).toEqual('item-1');
-                });
-
-                it('do not add duplicates', function () {
-                    registry['edit.mode.lock']('item-1');
-
-                    expect(scope.dirtyItems.length).toEqual(1);
-                });
-            });
-
-            describe('when edit.mode.unlock received', function () {
-                beforeEach(function () {
-                    scope.dirtyItems = ['item-1', 'item-2'];
-                    registry['edit.mode.unlock']('item-2');
-                });
-
-                it('remove from dirty item list', function () {
-                    expect(scope.dirtyItems.length).toEqual(1);
-                });
-
-                it('removing unknown item should do nothing', function () {
-                    registry['edit.mode.unlock']('unknown');
-
-                    expect(scope.dirtyItems.length).toEqual(1);
                 });
             });
         });
-
     });
 
-    describe('EditModeOn directive', function () {
+    describe('editModeOn directive', function () {
         var directive, registry, scope, attrs, handler;
 
         beforeEach(inject(function (ngRegisterTopicHandler, topicRegistryMock, $rootScope) {
@@ -162,7 +273,7 @@ describe('toggle.edit.mode', function () {
         });
     });
 
-    describe('EditModeOff directive', function () {
+    describe('editModeOff directive', function () {
         var directive, registry, scope, attrs, handler;
 
         beforeEach(inject(function (ngRegisterTopicHandler, topicRegistryMock, $rootScope) {
