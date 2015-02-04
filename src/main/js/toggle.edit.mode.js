@@ -69,12 +69,18 @@ function EditModeRendererFactory($compile) {
     return {
         restrict:'A',
         link: function (scope, el) {
+            var newScope;
+
             scope.$on('edit.mode.renderer', function (event, args) {
                 if (args.open) {
-                    scope.ctx = args.ctx;
+                    newScope = scope.$new();
+                    for (var p in args.ctx) newScope[p] = args.ctx[p];
 
                     el.html(args.template);
-                    $compile(el.contents())(scope);
+                    $compile(el.contents())(newScope);
+                } else {
+                    newScope.$destroy();
+                    el.html('');
                 }
             });
         }

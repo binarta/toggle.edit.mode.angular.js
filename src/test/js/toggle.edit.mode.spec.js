@@ -156,7 +156,7 @@ describe('toggle.edit.mode', function () {
     });
 
     describe('editModeRenderer directive', function () {
-        var scope, $rootScope, element;
+        var scope, $rootScope, element, compileMock;
 
         beforeEach(inject(function (_$rootScope_, $compile) {
             element = angular.element('<div edit-mode-renderer></div>');
@@ -165,22 +165,31 @@ describe('toggle.edit.mode', function () {
             $compile(element)(scope);
         }));
 
-        describe('when edit.mode.renderer is broadcasted', function () {
+        describe('when edit.mode.renderer is opened', function () {
             beforeEach(function () {
                 $rootScope.$broadcast('edit.mode.renderer', {
                     open: true,
-                    ctx: 'value',
-                    template: '<p>{{ctx}}</p>'
+                    ctx: {key: 'value to test'},
+                    template: '<p>{{key}}</p>'
                 });
                 scope.$digest();
             });
 
-            it('scope is available', function () {
-                expect(scope.ctx).toEqual('value');
+            it('element is compiled', function () {
+                expect(element.html()).toContain('value to test');
             });
 
-            it('element is compiled', function () {
-                expect(element.html()).toEqual('<p class="ng-scope ng-binding">value</p>');
+            describe('when edit.mode.renderer is closed', function () {
+                beforeEach(function () {
+                    $rootScope.$broadcast('edit.mode.renderer', {
+                        open: false
+                    });
+                    scope.$digest();
+                });
+
+                it('element is removed', function () {
+                    expect(element.html()).toEqual('');
+                });
             });
         });
     });
