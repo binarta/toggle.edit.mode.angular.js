@@ -79,7 +79,7 @@ function EditModeRendererFactory($compile) {
                     el.html(args.template);
                     $compile(el.contents())(newScope);
                 } else {
-                    newScope.$destroy();
+                    if (newScope) newScope.$destroy();
                     el.html('');
                 }
             });
