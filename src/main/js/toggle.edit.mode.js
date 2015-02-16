@@ -52,7 +52,7 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     this.open = function (args) {
         $rootScope.$broadcast('edit.mode.renderer', {
             open: true,
-            ctx: args.ctx,
+            scope: args.scope,
             template: args.template
         });
     };
@@ -69,17 +69,11 @@ function EditModeRendererFactory($compile) {
     return {
         restrict:'A',
         link: function (scope, el) {
-            var newScope;
-
             scope.$on('edit.mode.renderer', function (event, args) {
                 if (args.open) {
-                    newScope = scope.$new();
-                    for (var p in args.ctx) newScope[p] = args.ctx[p];
-
                     el.html(args.template);
-                    $compile(el.contents())(newScope);
+                    $compile(el.contents())(args.scope);
                 } else {
-                    if (newScope) newScope.$destroy();
                     el.html('');
                 }
             });

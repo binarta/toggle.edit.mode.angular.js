@@ -116,7 +116,7 @@ describe('toggle.edit.mode', function () {
         describe('on open', function () {
             beforeEach(function () {
                 editModeRenderer.open({
-                    ctx: 'ctx',
+                    scope: 'scope',
                     template: 'template'
                 });
             });
@@ -124,7 +124,7 @@ describe('toggle.edit.mode', function () {
             it('edit.mode.renderer is broadcasted on rootScope', function () {
                 expect(argsSpy).toEqual({
                     open: true,
-                    ctx: 'ctx',
+                    scope: 'scope',
                     template: 'template'
                 });
             });
@@ -165,14 +165,19 @@ describe('toggle.edit.mode', function () {
             $compile(element)(scope);
         }));
 
-        describe('when edit.mode.renderer is opened', function () {
+        describe('when edit.mode.renderer is opened with scope', function () {
+            var newScope;
+
             beforeEach(function () {
+                newScope = $rootScope.$new();
+                newScope.key = 'value to test';
+
                 $rootScope.$broadcast('edit.mode.renderer', {
                     open: true,
-                    ctx: {key: 'value to test'},
+                    scope: newScope,
                     template: '<p>{{key}}</p>'
                 });
-                scope.$digest();
+                newScope.$digest();
             });
 
             it('element is compiled', function () {
@@ -184,7 +189,6 @@ describe('toggle.edit.mode', function () {
                     $rootScope.$broadcast('edit.mode.renderer', {
                         open: false
                     });
-                    scope.$digest();
                 });
 
                 it('element is removed', function () {
