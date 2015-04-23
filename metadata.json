@@ -1,0 +1,13 @@
+{
+  "msgs":{
+    "default":{
+      "edit.mode.locked": "Opgelet. Er zijn niet opgeslagen wijzigingen."
+    },
+    "nl":{
+      "edit.mode.locked": "Opgelet. Er zijn niet opgeslagen wijzigingen."
+    },
+    "en":{
+      "edit.mode.locked": "Warning. There are unsaved changes."
+    }
+  }
+}
