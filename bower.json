@@ -1,6 +1,9 @@
 {
   "name": "binarta.toggle.edit.mode.angular",
-  "main": "./src/main/js/toggle.edit.mode.js",
+  "main": [
+    "./src/main/js/toggle.edit.mode.js",
+    "./metadata.json"
+  ],
   "dependencies": {
     "angular": "1.3.*",
     "binarta.notifications.angular": "1.*.*"
