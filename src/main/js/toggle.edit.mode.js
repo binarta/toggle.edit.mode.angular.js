@@ -1,12 +1,12 @@
-angular.module('toggle.edit.mode', ['notifications'])
-    .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', EditModeService])
+angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
+    .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', 'activeUserHasPermission', EditModeService])
     .service('editModeRenderer', ['$rootScope', 'ngRegisterTopicHandler', EditModeRendererService])
     .directive('editModeRenderer', ['$compile', EditModeRendererFactory])
     .directive('toggleEditMode', ['$rootScope', 'editMode', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
 
-function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispatcher) {
+function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispatcher,activeUserHasPermission) {
     $rootScope.editing = false;
     var dirtyItems = [];
 
@@ -17,6 +17,36 @@ function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispat
 
     this.disable = function () {
         dirtyItems.length > 0 ? raiseLockedWarning() : disableEditMode();
+    };
+
+    this.bindEvent = function (ctx) {
+        activeUserHasPermission({
+            yes: function () {
+                ngRegisterTopicHandler(ctx.scope, 'edit.mode', bind);
+            },
+            no: function () {
+                unbind();
+            },
+            scope: ctx.scope
+        }, ctx.permission);
+
+        function bind(editModeActive) {
+            ctx.element.addClass('bin-editable');
+
+            if (editModeActive) {
+                ctx.element.bind("click", function () {
+                    $rootScope.$apply(ctx.onClick());
+                    return false;
+                });
+            } else {
+                unbind();
+            }
+        }
+
+        function unbind() {
+            ctx.element.removeClass('bin-editable');
+            ctx.element.unbind("click");
+        }
     };
 
     function disableEditMode() {

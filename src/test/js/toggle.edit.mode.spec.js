@@ -1,14 +1,20 @@
+angular.module('checkpoint', [])
+    .factory('activeUserHasPermission', function () {
+        return jasmine.createSpy('activeUserHasPermission');
+    });
+
 describe('toggle.edit.mode', function () {
     beforeEach(module('toggle.edit.mode'));
 
     describe('editMode service', function () {
-        var editMode, $rootScope, registry, topics;
+        var editMode, $rootScope, registry, topics, activeUserHasPermission;
 
-        beforeEach(inject(function (_editMode_, _$rootScope_, topicRegistryMock, topicMessageDispatcherMock) {
+        beforeEach(inject(function (_editMode_, _$rootScope_, topicRegistryMock, topicMessageDispatcherMock, _activeUserHasPermission_) {
             editMode = _editMode_;
             $rootScope = _$rootScope_;
             registry = topicRegistryMock;
             topics = topicMessageDispatcherMock;
+            activeUserHasPermission = _activeUserHasPermission_;
         }));
 
         it('service exists', function () {
@@ -93,6 +99,95 @@ describe('toggle.edit.mode', function () {
                 expect($rootScope.editing).toEqual(false);
             });
 
+        });
+
+        describe('bind click event on element', function () {
+            var scope, element, onClick;
+
+            beforeEach(function () {
+                scope = $rootScope.$new();
+                element = jasmine.createSpyObj('element', ['bind', 'unbind', 'addClass', 'removeClass']);
+                onClick = jasmine.createSpy('callback');
+
+                editMode.bindEvent({
+                    scope: scope,
+                    permission: 'permission',
+                    element: element,
+                    onClick: onClick
+                });
+            });
+
+            it('permission is passed to permission check', function () {
+                expect(activeUserHasPermission.calls[0].args[1]).toEqual('permission');
+            });
+
+            it('scope is passed to permission check', function () {
+                expect(activeUserHasPermission.calls[0].args[0].scope).toEqual(scope);
+            });
+
+            describe('when active user has no permission', function () {
+                beforeEach(function () {
+                    activeUserHasPermission.calls[0].args[0].no();
+                });
+
+                it('unbind click event', function () {
+                    expect(element.unbind).toHaveBeenCalledWith('click');
+                });
+
+                it('remove editable class', function () {
+                    expect(element.removeClass).toHaveBeenCalledWith('bin-editable');
+                });
+            });
+
+            describe('when active user has permission', function () {
+                beforeEach(function () {
+                    activeUserHasPermission.calls[0].args[0].yes();
+                });
+
+                describe('and edit.mode inactive received', function () {
+                    beforeEach(function () {
+                        registry['edit.mode'](false);
+                    });
+
+                    it('unbind click event', function () {
+                        expect(element.unbind).toHaveBeenCalledWith('click');
+                    });
+
+                    it('remove editable class', function () {
+                        expect(element.removeClass).toHaveBeenCalledWith('bin-editable');
+                    });
+                });
+
+                describe('and edit.mode active received', function () {
+                    beforeEach(function () {
+                        registry['edit.mode'](true);
+                    });
+
+                    it('bind click event', function () {
+                        expect(element.bind.calls[0].args[0]).toEqual('click');
+                    });
+
+                    it('add editable class', function () {
+                        expect(element.addClass).toHaveBeenCalledWith('bin-editable');
+                    });
+
+                    describe('element is clicked', function () {
+                        var propagate;
+
+                        beforeEach(function () {
+                            propagate = element.bind.calls[0].args[1]();
+                        });
+
+                        it('execute callback', function () {
+                            expect(onClick).toHaveBeenCalled();
+                        });
+
+                        it('do not propagate click event', function () {
+                            expect(propagate).toEqual(false);
+                        });
+                    });
+                });
+            });
         });
     });
 
