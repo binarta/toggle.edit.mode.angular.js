@@ -1,13 +1,19 @@
 {
   "msgs":{
     "default":{
-      "edit.mode.locked": "Opgelet. Er zijn niet opgeslagen wijzigingen."
+      "edit.mode.locked": "Warning. There are unsaved changes."
     },
     "nl":{
       "edit.mode.locked": "Opgelet. Er zijn niet opgeslagen wijzigingen."
     },
     "en":{
       "edit.mode.locked": "Warning. There are unsaved changes."
+    },
+    "fr":{
+      "edit.mode.locked": "Attention, vos modifications ne sont pas encore enregistrées."
+    },
+    "de":{
+      "edit.mode.locked": "Achtung. Einige Änderungen wurden nicht gespeichert."
     }
   }
 }
