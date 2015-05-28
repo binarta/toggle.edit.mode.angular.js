@@ -3,7 +3,8 @@
   "main": [
     "./src/main/js/toggle.edit.mode.js",
     "./less/toggle-edit-mode.less",
-    "./metadata.json"
+    "./metadata.json",
+    "./metadata-system.json"
   ],
   "dependencies": {
     "angular": "1.3.*",
