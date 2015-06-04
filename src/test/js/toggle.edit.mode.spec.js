@@ -118,15 +118,20 @@ describe('toggle.edit.mode', function () {
             });
 
             it('permission is passed to permission check', function () {
+                registry['edit.mode'](true);
+
                 expect(activeUserHasPermission.calls[0].args[1]).toEqual('permission');
             });
 
             it('scope is passed to permission check', function () {
+                registry['edit.mode'](true);
+
                 expect(activeUserHasPermission.calls[0].args[0].scope).toEqual(scope);
             });
 
             describe('when active user has no permission', function () {
                 beforeEach(function () {
+                    registry['edit.mode'](true);
                     activeUserHasPermission.calls[0].args[0].no();
                 });
 
@@ -140,13 +145,10 @@ describe('toggle.edit.mode', function () {
             });
 
             describe('when active user has permission', function () {
-                beforeEach(function () {
-                    activeUserHasPermission.calls[0].args[0].yes();
-                });
-
                 describe('and edit.mode inactive received', function () {
                     beforeEach(function () {
                         registry['edit.mode'](false);
+                        activeUserHasPermission.calls[0].args[0].yes();
                     });
 
                     it('unbind click event', function () {
@@ -161,6 +163,7 @@ describe('toggle.edit.mode', function () {
                 describe('and edit.mode active received', function () {
                     beforeEach(function () {
                         registry['edit.mode'](true);
+                        activeUserHasPermission.calls[0].args[0].yes();
                     });
 
                     it('bind click event', function () {

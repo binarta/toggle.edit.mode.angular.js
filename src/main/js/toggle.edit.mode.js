@@ -20,15 +20,17 @@ function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispat
     };
 
     this.bindEvent = function (ctx) {
-        activeUserHasPermission({
-            yes: function () {
-                ngRegisterTopicHandler(ctx.scope, 'edit.mode', bind);
-            },
-            no: function () {
-                unbind();
-            },
-            scope: ctx.scope
-        }, ctx.permission);
+        ngRegisterTopicHandler(ctx.scope, 'edit.mode', function (editModeActive) {
+            activeUserHasPermission({
+                no: function () {
+                    unbind();
+                },
+                yes: function () {
+                    bind(editModeActive);
+                },
+                scope: ctx.scope
+            }, ctx.permission);
+        });
 
         function bind(editModeActive) {
             ctx.element.addClass('bin-editable');
