@@ -262,6 +262,18 @@ describe('toggle.edit.mode', function () {
                 });
             });
         });
+
+        describe('on close without scope', function () {
+            beforeEach(function () {
+                editModeRenderer.close();
+            });
+
+            it('edit.mode.renderer is broadcasted on rootScope', function () {
+                expect(argsSpy).toEqual({
+                    open: false
+                });
+            });
+        });
     });
 
     describe('editModeRenderer directive', function () {

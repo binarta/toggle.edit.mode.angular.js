@@ -91,7 +91,7 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
         });
     };
     this.close = function () {
-        scope.$destroy();
+        if (scope) scope.$destroy();
         $rootScope.$broadcast('edit.mode.renderer', {open: false});
     };
 
