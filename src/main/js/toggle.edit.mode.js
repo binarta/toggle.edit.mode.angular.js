@@ -1,7 +1,7 @@
 angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
     .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', 'activeUserHasPermission', EditModeService])
     .service('editModeRenderer', ['$rootScope', 'ngRegisterTopicHandler', EditModeRendererService])
-    .directive('editModeRenderer', ['$compile', EditModeRendererFactory])
+    .directive('editModeRenderer', ['$compile', EditModeRendererDirective])
     .directive('toggleEditMode', ['$rootScope', 'editMode', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
@@ -80,15 +80,18 @@ function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispat
 
 function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     var self = this;
+    var scope;
 
     this.open = function (args) {
+        scope = args.scope;
         $rootScope.$broadcast('edit.mode.renderer', {
             open: true,
-            scope: args.scope,
+            scope: scope,
             template: args.template
         });
     };
     this.close = function () {
+        scope.$destroy();
         $rootScope.$broadcast('edit.mode.renderer', {open: false});
     };
 
@@ -97,7 +100,7 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     });
 }
 
-function EditModeRendererFactory($compile) {
+function EditModeRendererDirective($compile) {
     return {
         restrict:'A',
         link: function (scope, el) {

@@ -195,12 +195,13 @@ describe('toggle.edit.mode', function () {
     });
 
     describe('editModeRenderer service', function () {
-        var editModeRenderer, registry, scope, argsSpy;
+        var editModeRenderer, registry, scope, rendererScope, argsSpy;
 
         beforeEach(inject(function (_editModeRenderer_, topicRegistryMock, $rootScope) {
             editModeRenderer = _editModeRenderer_;
             registry = topicRegistryMock;
             scope = $rootScope.$new();
+            rendererScope = $rootScope.$new();
             argsSpy = {};
             scope.$on('edit.mode.renderer', function (event, args) {
                 argsSpy = args;
@@ -214,7 +215,7 @@ describe('toggle.edit.mode', function () {
         describe('on open', function () {
             beforeEach(function () {
                 editModeRenderer.open({
-                    scope: 'scope',
+                    scope: rendererScope,
                     template: 'template'
                 });
             });
@@ -222,32 +223,42 @@ describe('toggle.edit.mode', function () {
             it('edit.mode.renderer is broadcasted on rootScope', function () {
                 expect(argsSpy).toEqual({
                     open: true,
-                    scope: 'scope',
+                    scope: rendererScope,
                     template: 'template'
                 });
             });
-        });
 
-        describe('on close', function () {
-            beforeEach(function () {
-                editModeRenderer.close();
-            });
+            describe('on close', function () {
+                var destroyed;
 
-            it('edit.mode.renderer is broadcasted on rootScope', function () {
-                expect(argsSpy).toEqual({
-                    open: false
+                beforeEach(function () {
+                    rendererScope.$on('$destroy', function () {
+                        destroyed = true;
+                    });
+
+                    editModeRenderer.close();
+                });
+
+                it('edit.mode.renderer is broadcasted on rootScope', function () {
+                    expect(argsSpy).toEqual({
+                        open: false
+                    });
+                });
+
+                it('renderer scope is destroyed', function () {
+                    expect(destroyed).toBeTruthy();
                 });
             });
-        });
 
-        describe('on edit.mode event', function () {
-            beforeEach(function () {
-                registry['edit.mode'](false);
-            });
+            describe('on edit.mode event', function () {
+                beforeEach(function () {
+                    registry['edit.mode'](false);
+                });
 
-            it('close renderer', function () {
-                expect(argsSpy).toEqual({
-                    open: false
+                it('close renderer', function () {
+                    expect(argsSpy).toEqual({
+                        open: false
+                    });
                 });
             });
         });
