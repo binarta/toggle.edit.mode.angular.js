@@ -6,7 +6,7 @@ angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
 
-function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispatcher,activeUserHasPermission) {
+function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatcher, activeUserHasPermission) {
     $rootScope.editing = false;
     var dirtyItems = [];
 
@@ -80,19 +80,25 @@ function EditModeService ($rootScope, ngRegisterTopicHandler, topicMessageDispat
 
 function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     var self = this;
-    var scope;
+    var scopes = {};
 
     this.open = function (args) {
-        scope = args.scope;
+        var id = args.id || 'main';
+        scopes[id] = args.scope;
         $rootScope.$broadcast('edit.mode.renderer', {
+            id: id,
             open: true,
-            scope: scope,
+            scope: args.scope,
             template: args.template
         });
     };
-    this.close = function () {
-        if (scope) scope.$destroy();
-        $rootScope.$broadcast('edit.mode.renderer', {open: false});
+    this.close = function (args) {
+        var id = args && args.id ? args.id : 'main';
+        if (scopes[id]) scopes[id].$destroy();
+        $rootScope.$broadcast('edit.mode.renderer', {
+            id: id,
+            open: false
+        });
     };
 
     ngRegisterTopicHandler($rootScope, 'edit.mode', function (enabled) {
@@ -102,14 +108,16 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
 
 function EditModeRendererDirective($compile) {
     return {
-        restrict:'A',
-        link: function (scope, el) {
+        restrict: 'A',
+        link: function (scope, el, attrs) {
             scope.$on('edit.mode.renderer', function (event, args) {
-                if (args.open) {
-                    el.html(args.template);
-                    $compile(el.contents())(args.scope);
-                } else {
-                    el.html('');
+                if((args.id || 'main') == (attrs.editModeRenderer || 'main')) {
+                    if (args.open) {
+                        el.html(args.template);
+                        $compile(el.contents())(args.scope);
+                    } else {
+                        el.html('');
+                    }
                 }
             });
         }
@@ -130,8 +138,8 @@ function ToggleEditModeDirectiveFactory($rootScope, editMode) {
 
 function EditModeOnDirectiveFactory(ngRegisterTopicHandler) {
     return {
-        restrict:'A',
-        link: function(scope, el, attrs) {
+        restrict: 'A',
+        link: function (scope, el, attrs) {
             ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 if (editMode) scope.$eval(attrs.editModeOn);
             });
@@ -141,8 +149,8 @@ function EditModeOnDirectiveFactory(ngRegisterTopicHandler) {
 
 function EditModeOffDirectiveFactory(ngRegisterTopicHandler) {
     return {
-        restrict:'A',
-        link: function(scope, el, attrs) {
+        restrict: 'A',
+        link: function (scope, el, attrs) {
             ngRegisterTopicHandler(scope, 'edit.mode', function (editMode) {
                 if (!editMode) scope.$eval(attrs.editModeOff);
             });

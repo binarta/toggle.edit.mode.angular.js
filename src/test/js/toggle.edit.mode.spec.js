@@ -220,8 +220,9 @@ describe('toggle.edit.mode', function () {
                 });
             });
 
-            it('edit.mode.renderer is broadcasted on rootScope', function () {
+            it('edit.mode.renderer is broadcast on rootScope with default id', function () {
                 expect(argsSpy).toEqual({
+                    id: 'main',
                     open: true,
                     scope: rendererScope,
                     template: 'template'
@@ -239,8 +240,9 @@ describe('toggle.edit.mode', function () {
                     editModeRenderer.close();
                 });
 
-                it('edit.mode.renderer is broadcasted on rootScope', function () {
+                it('edit.mode.renderer is broadcasted on rootScope with default id', function () {
                     expect(argsSpy).toEqual({
+                        id: 'main',
                         open: false
                     });
                 });
@@ -255,11 +257,26 @@ describe('toggle.edit.mode', function () {
                     registry['edit.mode'](false);
                 });
 
-                it('close renderer', function () {
+                it('close main renderer', function () {
                     expect(argsSpy).toEqual({
+                        id: 'main',
                         open: false
                     });
                 });
+            });
+        });
+
+        it('open specific panel', function () {
+            editModeRenderer.open({
+                id: 'C',
+                scope: rendererScope,
+                template: 'template'
+            });
+            expect(argsSpy).toEqual({
+                id: 'C',
+                open: true,
+                scope: rendererScope,
+                template: 'template'
             });
         });
 
@@ -268,10 +285,19 @@ describe('toggle.edit.mode', function () {
                 editModeRenderer.close();
             });
 
-            it('edit.mode.renderer is broadcasted on rootScope', function () {
+            it('edit.mode.renderer is broadcast on rootScope with default id', function () {
                 expect(argsSpy).toEqual({
+                    id: 'main',
                     open: false
                 });
+            });
+        });
+
+        it('close specific panel', function () {
+            editModeRenderer.close({id: 'C'});
+            expect(argsSpy).toEqual({
+                id: 'C',
+                open: false
             });
         });
     });
@@ -294,6 +320,7 @@ describe('toggle.edit.mode', function () {
                 newScope.key = 'value to test';
 
                 $rootScope.$broadcast('edit.mode.renderer', {
+                    id: 'main',
                     open: true,
                     scope: newScope,
                     template: '<p>{{key}}</p>'
@@ -308,6 +335,52 @@ describe('toggle.edit.mode', function () {
             describe('when edit.mode.renderer is closed', function () {
                 beforeEach(function () {
                     $rootScope.$broadcast('edit.mode.renderer', {
+                        id: 'main',
+                        open: false
+                    });
+                });
+
+                it('element is removed', function () {
+                    expect(element.html()).toEqual('');
+                });
+            });
+        });
+    });
+
+    describe('editModeRenderer directive with custom id', function () {
+        var scope, $rootScope, element, compileMock;
+
+        beforeEach(inject(function (_$rootScope_, $compile) {
+            element = angular.element('<div edit-mode-renderer="C"></div>');
+            $rootScope = _$rootScope_;
+            scope = $rootScope.$new();
+            $compile(element)(scope);
+        }));
+
+        describe('when edit.mode.renderer is opened with scope', function () {
+            var newScope;
+
+            beforeEach(function () {
+                newScope = $rootScope.$new();
+                newScope.key = 'value to test';
+
+                $rootScope.$broadcast('edit.mode.renderer', {
+                    id: 'C',
+                    open: true,
+                    scope: newScope,
+                    template: '<p>{{key}}</p>'
+                });
+                newScope.$digest();
+            });
+
+            it('element is compiled', function () {
+                expect(element.html()).toContain('value to test');
+            });
+
+            describe('when edit.mode.renderer is closed', function () {
+                beforeEach(function () {
+                    $rootScope.$broadcast('edit.mode.renderer', {
+                        id: 'C',
                         open: false
                     });
                 });
@@ -338,7 +411,7 @@ describe('toggle.edit.mode', function () {
                 directive.link(scope);
             });
 
-            it ('editing is false', function () {
+            it('editing is false', function () {
                 expect($rootScope.editing).toEqual(false);
             });
 
@@ -347,7 +420,7 @@ describe('toggle.edit.mode', function () {
                     scope.toggleEditMode();
                 });
 
-                it ('editing is true', function () {
+                it('editing is true', function () {
                     expect($rootScope.editing).toEqual(true);
                 });
 
@@ -356,7 +429,7 @@ describe('toggle.edit.mode', function () {
                         scope.toggleEditMode();
                     });
 
-                    it ('editing is false', function () {
+                    it('editing is false', function () {
                         expect($rootScope.editing).toEqual(false);
                     });
                 });
