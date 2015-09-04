@@ -213,54 +213,76 @@ describe('toggle.edit.mode', function () {
         });
 
         describe('on open', function () {
-            beforeEach(function () {
-                editModeRenderer.open({
-                    scope: rendererScope,
-                    template: 'template'
-                });
-            });
-
-            it('edit.mode.renderer is broadcast on rootScope with default id', function () {
-                expect(argsSpy).toEqual({
-                    id: 'main',
-                    open: true,
-                    scope: rendererScope,
-                    template: 'template'
-                });
-            });
-
-            describe('on close', function () {
-                var destroyed;
-
+            describe('with body and actions', function () {
                 beforeEach(function () {
-                    rendererScope.$on('$destroy', function () {
-                        destroyed = true;
-                    });
-
-                    editModeRenderer.close();
-                });
-
-                it('edit.mode.renderer is broadcasted on rootScope with default id', function () {
-                    expect(argsSpy).toEqual({
-                        id: 'main',
-                        open: false
+                    editModeRenderer.open({
+                        scope: rendererScope,
+                        body: 'body',
+                        actions: 'actions'
                     });
                 });
 
-                it('renderer scope is destroyed', function () {
-                    expect(destroyed).toBeTruthy();
+                it('edit.mode.renderer is broadcast on rootScope with default id', function () {
+                    expect(argsSpy).toEqual({
+                        id: 'main',
+                        open: true,
+                        scope: rendererScope,
+                        body: 'body',
+                        actions: 'actions'
+                    });
+                });
+
+                describe('on close', function () {
+                    var destroyed;
+
+                    beforeEach(function () {
+                        rendererScope.$on('$destroy', function () {
+                            destroyed = true;
+                        });
+
+                        editModeRenderer.close();
+                    });
+
+                    it('edit.mode.renderer is broadcasted on rootScope with default id', function () {
+                        expect(argsSpy).toEqual({
+                            id: 'main',
+                            open: false
+                        });
+                    });
+
+                    it('renderer scope is destroyed', function () {
+                        expect(destroyed).toBeTruthy();
+                    });
+                });
+
+                describe('on edit.mode event', function () {
+                    beforeEach(function () {
+                        registry['edit.mode'](false);
+                    });
+
+                    it('close main renderer', function () {
+                        expect(argsSpy).toEqual({
+                            id: 'main',
+                            open: false
+                        });
+                    });
                 });
             });
 
-            describe('on edit.mode event', function () {
+            describe('with template (legacy)', function () {
                 beforeEach(function () {
-                    registry['edit.mode'](false);
+                    editModeRenderer.open({
+                        scope: rendererScope,
+                        template: 'template'
+                    });
                 });
 
-                it('close main renderer', function () {
+                it('edit.mode.renderer is broadcast on rootScope with default id', function () {
                     expect(argsSpy).toEqual({
                         id: 'main',
-                        open: false
+                        open: true,
+                        scope: rendererScope,
+                        template: 'template'
                     });
                 });
             });
@@ -270,13 +292,15 @@ describe('toggle.edit.mode', function () {
             editModeRenderer.open({
                 id: 'C',
                 scope: rendererScope,
-                template: 'template'
+                body: 'body',
+                actions: 'actions'
             });
             expect(argsSpy).toEqual({
                 id: 'C',
                 open: true,
                 scope: rendererScope,
-                template: 'template'
+                body: 'body',
+                actions: 'actions'
             });
         });
 
@@ -313,35 +337,60 @@ describe('toggle.edit.mode', function () {
         }));
 
         describe('when edit.mode.renderer is opened with scope', function () {
-            var newScope;
+            describe('with body and actions', function () {
+                var newScope;
 
-            beforeEach(function () {
-                newScope = $rootScope.$new();
-                newScope.key = 'value to test';
-
-                $rootScope.$broadcast('edit.mode.renderer', {
-                    id: 'main',
-                    open: true,
-                    scope: newScope,
-                    template: '<p>{{key}}</p>'
-                });
-                newScope.$digest();
-            });
-
-            it('element is compiled', function () {
-                expect(element.html()).toContain('value to test');
-            });
-
-            describe('when edit.mode.renderer is closed', function () {
                 beforeEach(function () {
+                    newScope = $rootScope.$new();
+                    newScope.key = 'value to test';
+
                     $rootScope.$broadcast('edit.mode.renderer', {
                         id: 'main',
-                        open: false
+                        open: true,
+                        scope: newScope,
+                        body: '<p>{{key}}</p>',
+                        actions: 'actions'
                     });
+                    newScope.$digest();
                 });
 
-                it('element is removed', function () {
-                    expect(element.html()).toEqual('');
+                it('element is compiled', function () {
+                    expect(element.html()).toContain('value to test');
+                    expect(element.html()).toContain('actions');
+                });
+
+                describe('when edit.mode.renderer is closed', function () {
+                    beforeEach(function () {
+                        $rootScope.$broadcast('edit.mode.renderer', {
+                            id: 'main',
+                            open: false
+                        });
+                    });
+
+                    it('element is removed', function () {
+                        expect(element.html()).toEqual('');
+                    });
+                });
+            });
+
+            describe('with template (legacy)', function () {
+                var newScope;
+
+                beforeEach(function () {
+                    newScope = $rootScope.$new();
+                    newScope.key = 'value to test';
+
+                    $rootScope.$broadcast('edit.mode.renderer', {
+                        id: 'main',
+                        open: true,
+                        scope: newScope,
+                        template: '<p>{{key}}</p>'
+                    });
+                    newScope.$digest();
+                });
+
+                it('element is compiled', function () {
+                    expect(element.html()).toContain('value to test');
                 });
             });
         });

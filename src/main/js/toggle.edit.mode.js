@@ -89,7 +89,9 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
             id: id,
             open: true,
             scope: args.scope,
-            template: args.template
+            template: args.template,
+            body: args.body,
+            actions: args.actions
         });
     };
     this.close = function (args) {
@@ -113,7 +115,9 @@ function EditModeRendererDirective($compile) {
             scope.$on('edit.mode.renderer', function (event, args) {
                 if((args.id || 'main') == (attrs.editModeRenderer || 'main')) {
                     if (args.open) {
-                        el.html(args.template);
+                        el.html(args.body && args.actions
+                            ? '<div class="menu-body">' + args.body + '</div><div class="menu-actions">' + args.actions + '</div>'
+                            : args.template);
                         $compile(el.contents())(args.scope);
                     } else {
                         el.html('');
