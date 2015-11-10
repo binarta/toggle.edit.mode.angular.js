@@ -4,7 +4,15 @@ angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
     .directive('editModeRenderer', ['$compile', EditModeRendererDirective])
     .directive('toggleEditMode', ['$rootScope', 'editMode', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
-    .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory]);
+    .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory])
+    .run(['$rootScope', 'activeUserHasPermission', 'editMode', function ($rootScope, activeUserHasPermission, editMode) {
+        activeUserHasPermission({
+            yes: function () {
+                editMode.enable();
+            },
+            scope: $rootScope
+        }, 'edit.mode');
+    }]);
 
 function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatcher, activeUserHasPermission) {
     $rootScope.editing = false;

@@ -17,138 +17,145 @@ describe('toggle.edit.mode', function () {
             activeUserHasPermission = _activeUserHasPermission_;
         }));
 
-        it('service exists', function () {
-            expect(editMode).toBeDefined();
-        });
-
-        it('editing is not enabled', function () {
-            expect($rootScope.editing).toEqual(false);
-        });
-
-        describe('enable edit mode', function () {
-            beforeEach(function () {
-                editMode.enable();
+        describe('on run', function () {
+            it('check for permission', function () {
+               expect(activeUserHasPermission.calls[0].args[1]).toEqual('edit.mode');
+               expect(activeUserHasPermission.calls[0].args[0].scope).toEqual($rootScope);
             });
 
-            it('editing is on rootScope', function () {
-                expect($rootScope.editing).toEqual(true);
-            });
-
-            it('raise toggle edit mode enabled', function () {
-                expect(topics.persistent['edit.mode']).toEqual(true);
-            });
-        });
-
-        describe('disable edit mode', function () {
-            beforeEach(function () {
-                editMode.enable();
-            });
-
-            it('raise toggle edit mode disabled', function () {
-                editMode.disable();
-
-                expect(topics.persistent['edit.mode']).toEqual(false);
-            });
-
-            describe('when there are dirty items', function () {
+            describe('when user has edit.mode permission', function () {
                 beforeEach(function () {
-                    registry['edit.mode.lock']('item-1');
-
-                    editMode.disable();
+                    activeUserHasPermission.calls[0].args[0].yes();
                 });
 
-                it('raise a warning notification', function () {
-                    expect(topics['system.warning']).toEqual({
-                        code: 'edit.mode.locked',
-                        default: 'Warning. There are unsaved changes.'
+                it('enable edit mode', function () {
+                    expect($rootScope.editing).toEqual(true);
+                    expect(topics.persistent['edit.mode']).toEqual(true);
+                });
+            });
+        });
+
+        describe('edit mode is not enabled', function () {
+            beforeEach(function () {
+                activeUserHasPermission.reset();
+            });
+
+            it('service exists', function () {
+                expect(editMode).toBeDefined();
+            });
+
+            it('editing is not enabled', function () {
+                expect($rootScope.editing).toEqual(false);
+            });
+
+            describe('enable edit mode', function () {
+                beforeEach(function () {
+                    editMode.enable();
+                });
+
+                it('editing is on rootScope', function () {
+                    expect($rootScope.editing).toEqual(true);
+                });
+
+                it('raise toggle edit mode enabled', function () {
+                    expect(topics.persistent['edit.mode']).toEqual(true);
+                });
+            });
+
+            describe('disable edit mode', function () {
+                beforeEach(function () {
+                    editMode.enable();
+                });
+
+                it('raise toggle edit mode disabled', function () {
+                    editMode.disable();
+
+                    expect(topics.persistent['edit.mode']).toEqual(false);
+                });
+
+                describe('when there are dirty items', function () {
+                    beforeEach(function () {
+                        registry['edit.mode.lock']('item-1');
+
+                        editMode.disable();
+                    });
+
+                    it('raise a warning notification', function () {
+                        expect(topics['system.warning']).toEqual({
+                            code: 'edit.mode.locked',
+                            default: 'Warning. There are unsaved changes.'
+                        });
+                    });
+
+
+                    it('raise edit mode lock is locked', function () {
+                        expect(topics['edit.mode.locked']).toEqual('ok');
+                    });
+                });
+            });
+
+            describe('when edit mode enabled and checkpoint.signout received', function () {
+                beforeEach(function () {
+                    editMode.enable();
+                });
+
+                it('disable edit mode', function () {
+                    registry['checkpoint.signout']();
+
+                    expect($rootScope.editing).toEqual(false);
+                    expect(topics.persistent['edit.mode']).toEqual(false);
+                });
+            });
+
+            describe('when edit.mode.unlock received', function () {
+                beforeEach(function () {
+                    editMode.enable();
+
+                    registry['edit.mode.lock']('item-1');
+
+                    registry['edit.mode.unlock']('item-1');
+                });
+
+                it('can disable', function () {
+                    editMode.disable();
+
+                    expect($rootScope.editing).toEqual(false);
+                });
+
+            });
+
+            describe('bind click event on element', function () {
+                var scope, element, onClick;
+
+                beforeEach(function () {
+                    scope = $rootScope.$new();
+                    element = jasmine.createSpyObj('element', ['bind', 'unbind', 'addClass', 'removeClass']);
+                    onClick = jasmine.createSpy('callback');
+
+                    editMode.bindEvent({
+                        scope: scope,
+                        permission: 'permission',
+                        element: element,
+                        onClick: onClick
                     });
                 });
 
-
-                it('raise edit mode lock is locked', function () {
-                    expect(topics['edit.mode.locked']).toEqual('ok');
-                });
-            });
-        });
-
-        describe('when edit mode enabled and checkpoint.signout received', function () {
-            beforeEach(function () {
-                editMode.enable();
-            });
-
-            it('disable edit mode', function () {
-                registry['checkpoint.signout']();
-
-                expect($rootScope.editing).toEqual(false);
-                expect(topics.persistent['edit.mode']).toEqual(false);
-            });
-        });
-
-        describe('when edit.mode.unlock received', function () {
-            beforeEach(function () {
-                editMode.enable();
-
-                registry['edit.mode.lock']('item-1');
-
-                registry['edit.mode.unlock']('item-1');
-            });
-
-            it('can disable', function () {
-                editMode.disable();
-
-                expect($rootScope.editing).toEqual(false);
-            });
-
-        });
-
-        describe('bind click event on element', function () {
-            var scope, element, onClick;
-
-            beforeEach(function () {
-                scope = $rootScope.$new();
-                element = jasmine.createSpyObj('element', ['bind', 'unbind', 'addClass', 'removeClass']);
-                onClick = jasmine.createSpy('callback');
-
-                editMode.bindEvent({
-                    scope: scope,
-                    permission: 'permission',
-                    element: element,
-                    onClick: onClick
-                });
-            });
-
-            it('permission is passed to permission check', function () {
-                registry['edit.mode'](true);
-
-                expect(activeUserHasPermission.calls[0].args[1]).toEqual('permission');
-            });
-
-            it('scope is passed to permission check', function () {
-                registry['edit.mode'](true);
-
-                expect(activeUserHasPermission.calls[0].args[0].scope).toEqual(scope);
-            });
-
-            describe('when active user has no permission', function () {
-                beforeEach(function () {
+                it('permission is passed to permission check', function () {
                     registry['edit.mode'](true);
-                    activeUserHasPermission.calls[0].args[0].no();
+
+                    expect(activeUserHasPermission.calls[0].args[1]).toEqual('permission');
                 });
 
-                it('unbind click event', function () {
-                    expect(element.unbind).toHaveBeenCalledWith('click');
+                it('scope is passed to permission check', function () {
+                    registry['edit.mode'](true);
+
+                    expect(activeUserHasPermission.calls[0].args[0].scope).toEqual(scope);
                 });
 
-                it('remove editable class', function () {
-                    expect(element.removeClass).toHaveBeenCalledWith('bin-editable');
-                });
-            });
-
-            describe('when active user has permission', function () {
-                describe('and edit.mode inactive received', function () {
+                describe('when active user has no permission', function () {
                     beforeEach(function () {
-                        registry['edit.mode'](false);
-                        activeUserHasPermission.calls[0].args[0].yes();
+                        registry['edit.mode'](true);
+                        activeUserHasPermission.calls[0].args[0].no();
                     });
 
                     it('unbind click event', function () {
@@ -160,33 +167,50 @@ describe('toggle.edit.mode', function () {
                     });
                 });
 
-                describe('and edit.mode active received', function () {
-                    beforeEach(function () {
-                        registry['edit.mode'](true);
-                        activeUserHasPermission.calls[0].args[0].yes();
-                    });
-
-                    it('bind click event', function () {
-                        expect(element.bind.calls[0].args[0]).toEqual('click');
-                    });
-
-                    it('add editable class', function () {
-                        expect(element.addClass).toHaveBeenCalledWith('bin-editable');
-                    });
-
-                    describe('element is clicked', function () {
-                        var propagate;
-
+                describe('when active user has permission', function () {
+                    describe('and edit.mode inactive received', function () {
                         beforeEach(function () {
-                            propagate = element.bind.calls[0].args[1]();
+                            registry['edit.mode'](false);
+                            activeUserHasPermission.calls[0].args[0].yes();
                         });
 
-                        it('execute callback', function () {
-                            expect(onClick).toHaveBeenCalled();
+                        it('unbind click event', function () {
+                            expect(element.unbind).toHaveBeenCalledWith('click');
                         });
 
-                        it('do not propagate click event', function () {
-                            expect(propagate).toEqual(false);
+                        it('remove editable class', function () {
+                            expect(element.removeClass).toHaveBeenCalledWith('bin-editable');
+                        });
+                    });
+
+                    describe('and edit.mode active received', function () {
+                        beforeEach(function () {
+                            registry['edit.mode'](true);
+                            activeUserHasPermission.calls[0].args[0].yes();
+                        });
+
+                        it('bind click event', function () {
+                            expect(element.bind.calls[0].args[0]).toEqual('click');
+                        });
+
+                        it('add editable class', function () {
+                            expect(element.addClass).toHaveBeenCalledWith('bin-editable');
+                        });
+
+                        describe('element is clicked', function () {
+                            var propagate;
+
+                            beforeEach(function () {
+                                propagate = element.bind.calls[0].args[1]();
+                            });
+
+                            it('execute callback', function () {
+                                expect(onClick).toHaveBeenCalled();
+                            });
+
+                            it('do not propagate click event', function () {
+                                expect(propagate).toEqual(false);
+                            });
                         });
                     });
                 });
