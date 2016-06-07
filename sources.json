@@ -1,0 +1,5 @@
+{
+  "default": {
+    "toggle.edit.mode": "bower_components/binarta.toggle.edit.mode.angular/src/main/js/toggle.edit.mode.js"
+  }
+}

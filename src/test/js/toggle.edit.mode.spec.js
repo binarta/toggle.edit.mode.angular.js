@@ -19,13 +19,13 @@ describe('toggle.edit.mode', function () {
 
         describe('on run', function () {
             it('check for permission', function () {
-               expect(activeUserHasPermission.calls[0].args[1]).toEqual('edit.mode');
-               expect(activeUserHasPermission.calls[0].args[0].scope).toEqual($rootScope);
+               expect(activeUserHasPermission.calls.first().args[1]).toEqual('edit.mode');
+               expect(activeUserHasPermission.calls.first().args[0].scope).toEqual($rootScope);
             });
 
             describe('when user has edit.mode permission', function () {
                 beforeEach(function () {
-                    activeUserHasPermission.calls[0].args[0].yes();
+                    activeUserHasPermission.calls.first().args[0].yes();
                 });
 
                 it('enable edit mode', function () {
@@ -37,7 +37,7 @@ describe('toggle.edit.mode', function () {
 
         describe('edit mode is not enabled', function () {
             beforeEach(function () {
-                activeUserHasPermission.reset();
+                activeUserHasPermission.calls.reset();
             });
 
             it('service exists', function () {
@@ -143,19 +143,19 @@ describe('toggle.edit.mode', function () {
                 it('permission is passed to permission check', function () {
                     registry['edit.mode'](true);
 
-                    expect(activeUserHasPermission.calls[0].args[1]).toEqual('permission');
+                    expect(activeUserHasPermission.calls.first().args[1]).toEqual('permission');
                 });
 
                 it('scope is passed to permission check', function () {
                     registry['edit.mode'](true);
 
-                    expect(activeUserHasPermission.calls[0].args[0].scope).toEqual(scope);
+                    expect(activeUserHasPermission.calls.first().args[0].scope).toEqual(scope);
                 });
 
                 describe('when active user has no permission', function () {
                     beforeEach(function () {
                         registry['edit.mode'](true);
-                        activeUserHasPermission.calls[0].args[0].no();
+                        activeUserHasPermission.calls.first().args[0].no();
                     });
 
                     it('unbind click event', function () {
@@ -171,7 +171,7 @@ describe('toggle.edit.mode', function () {
                     describe('and edit.mode inactive received', function () {
                         beforeEach(function () {
                             registry['edit.mode'](false);
-                            activeUserHasPermission.calls[0].args[0].yes();
+                            activeUserHasPermission.calls.first().args[0].yes();
                         });
 
                         it('unbind click event', function () {
@@ -186,11 +186,11 @@ describe('toggle.edit.mode', function () {
                     describe('and edit.mode active received', function () {
                         beforeEach(function () {
                             registry['edit.mode'](true);
-                            activeUserHasPermission.calls[0].args[0].yes();
+                            activeUserHasPermission.calls.first().args[0].yes();
                         });
 
                         it('bind click event', function () {
-                            expect(element.bind.calls[0].args[0]).toEqual('click');
+                            expect(element.bind.calls.first().args[0]).toEqual('click');
                         });
 
                         it('add editable class', function () {
@@ -201,7 +201,7 @@ describe('toggle.edit.mode', function () {
                             var propagate;
 
                             beforeEach(function () {
-                                propagate = element.bind.calls[0].args[1]();
+                                propagate = element.bind.calls.first().args[1]();
                             });
 
                             it('execute callback', function () {
