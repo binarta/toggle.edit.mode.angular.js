@@ -1,7 +1,7 @@
 angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
     .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', 'activeUserHasPermission', EditModeService])
     .service('editModeRenderer', ['$rootScope', 'ngRegisterTopicHandler', EditModeRendererService])
-    .directive('editModeRenderer', ['$compile', EditModeRendererDirective])
+    .directive('editModeRenderer', ['$compile', '$templateCache', EditModeRendererDirective])
     .directive('toggleEditMode', ['$rootScope', 'editMode', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory])
@@ -91,14 +91,10 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     var scopes = {};
 
     this.open = function (args) {
-        var id = args.id || 'main';
-        scopes[id] = args.scope;
-        $rootScope.$broadcast('edit.mode.renderer', {
-            id: id,
-            open: true,
-            scope: args.scope,
-            template: args.template
-        });
+        args.id = args.id || 'main';
+        scopes[args.id] = args.scope;
+        args.open = true;
+        $rootScope.$broadcast('edit.mode.renderer', args);
     };
     this.close = function (args) {
         var id = args && args.id ? args.id : 'main';
@@ -114,14 +110,14 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
     });
 }
 
-function EditModeRendererDirective($compile) {
+function EditModeRendererDirective($compile, $templateCache) {
     return {
         restrict: 'A',
         link: function (scope, el, attrs) {
             scope.$on('edit.mode.renderer', function (event, args) {
                 if((args.id || 'main') == (attrs.editModeRenderer || 'main')) {
                     if (args.open) {
-                        el.html(args.template);
+                        el.html(args.templateUrl ? $templateCache.get(args.templateUrl) : args.template);
                         $compile(el.contents())(args.scope);
                     } else {
                         el.html('');

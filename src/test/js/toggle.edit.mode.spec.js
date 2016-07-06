@@ -290,6 +290,24 @@ describe('toggle.edit.mode', function () {
             });
         });
 
+        describe('on open with templateUrl', function () {
+            beforeEach(function () {
+                editModeRenderer.open({
+                    scope: rendererScope,
+                    templateUrl: 'template.html'
+                });
+            });
+
+            it('edit.mode.renderer is broadcast on rootScope with default id', function () {
+                expect(argsSpy).toEqual({
+                    id: 'main',
+                    open: true,
+                    scope: rendererScope,
+                    templateUrl: 'template.html'
+                });
+            });
+        });
+
         it('open specific panel', function () {
             editModeRenderer.open({
                 id: 'C',
@@ -329,7 +347,9 @@ describe('toggle.edit.mode', function () {
     describe('editModeRenderer directive', function () {
         var scope, $rootScope, element, compileMock;
 
-        beforeEach(inject(function (_$rootScope_, $compile) {
+        beforeEach(inject(function (_$rootScope_, $compile, $templateCache) {
+            $templateCache.put('test.html', 'from templateCache: {{key}}');
+
             element = angular.element('<div edit-mode-renderer></div>');
             $rootScope = _$rootScope_;
             scope = $rootScope.$new();
@@ -342,30 +362,51 @@ describe('toggle.edit.mode', function () {
             beforeEach(function () {
                 newScope = $rootScope.$new();
                 newScope.key = 'value to test';
-
-                $rootScope.$broadcast('edit.mode.renderer', {
-                    id: 'main',
-                    open: true,
-                    scope: newScope,
-                    template: '<p>{{key}}</p>'
-                });
-                newScope.$digest();
             });
 
-            it('element is compiled', function () {
-                expect(element.html()).toContain('value to test');
-            });
-
-            describe('when edit.mode.renderer is closed', function () {
+            describe('open', function () {
                 beforeEach(function () {
                     $rootScope.$broadcast('edit.mode.renderer', {
                         id: 'main',
-                        open: false
+                        open: true,
+                        scope: newScope,
+                        template: '<p>{{key}}</p>'
                     });
+                    newScope.$digest();
                 });
 
-                it('element is removed', function () {
-                    expect(element.html()).toEqual('');
+                it('element is compiled', function () {
+                    expect(element.html()).toContain('value to test');
+                });
+
+                describe('when edit.mode.renderer is closed', function () {
+                    beforeEach(function () {
+                        $rootScope.$broadcast('edit.mode.renderer', {
+                            id: 'main',
+                            open: false
+                        });
+                    });
+
+                    it('element is removed', function () {
+                        expect(element.html()).toEqual('');
+                    });
+                });
+            });
+
+            describe('prefer templateUrl', function () {
+                beforeEach(function () {
+                    $rootScope.$broadcast('edit.mode.renderer', {
+                        id: 'main',
+                        open: true,
+                        scope: newScope,
+                        template: '<p>{{key}}</p>',
+                        templateUrl: 'test.html'
+                    });
+                    newScope.$digest();
+                });
+
+                it('element is compiled', function () {
+                    expect(element.html()).toContain('from templateCache: value to test');
                 });
             });
         });
