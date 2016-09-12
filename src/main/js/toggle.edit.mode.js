@@ -1,20 +1,23 @@
-angular.module('toggle.edit.mode', ['notifications', 'checkpoint'])
-    .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', 'activeUserHasPermission', EditModeService])
+angular.module('toggle.edit.mode', ['notifications', 'binarta-checkpointjs-angular1'])
+    .service('editMode', ['$rootScope', 'ngRegisterTopicHandler', 'topicMessageDispatcher', 'binarta', EditModeService])
     .service('editModeRenderer', ['$rootScope', 'ngRegisterTopicHandler', EditModeRendererService])
     .directive('editModeRenderer', ['$compile', '$templateCache', EditModeRendererDirective])
     .directive('toggleEditMode', ['$rootScope', 'editMode', ToggleEditModeDirectiveFactory])
     .directive('editModeOn', ['ngRegisterTopicHandler', EditModeOnDirectiveFactory])
     .directive('editModeOff', ['ngRegisterTopicHandler', EditModeOffDirectiveFactory])
-    .run(['$rootScope', 'activeUserHasPermission', 'editMode', function ($rootScope, activeUserHasPermission, editMode) {
-        activeUserHasPermission({
-            yes: function () {
-                editMode.enable();
+    .run(['$rootScope', 'editMode', 'binarta', function ($rootScope, editMode, binarta) {
+        binarta.checkpoint.profile.eventRegistry.add({
+            signedin: function () {
+                if (binarta.checkpoint.profile.hasPermission('edit.mode'))
+                    editMode.enable();
             },
-            scope: $rootScope
-        }, 'edit.mode');
+            signedout: function () {
+                editMode.disable();
+            }
+        });
     }]);
 
-function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatcher, activeUserHasPermission) {
+function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatcher, binarta) {
     $rootScope.editing = false;
     var dirtyItems = [];
 
@@ -29,15 +32,10 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
 
     this.bindEvent = function (ctx) {
         ngRegisterTopicHandler(ctx.scope, 'edit.mode', function (editModeActive) {
-            activeUserHasPermission({
-                no: function () {
-                    unbind();
-                },
-                yes: function () {
-                    bind(editModeActive);
-                },
-                scope: ctx.scope
-            }, ctx.permission);
+            if (binarta.checkpoint.profile.hasPermission('edit.mode'))
+                bind(editModeActive);
+            else
+                unbind();
         });
 
         function bind(editModeActive) {
@@ -115,7 +113,7 @@ function EditModeRendererDirective($compile, $templateCache) {
         restrict: 'A',
         link: function (scope, el, attrs) {
             scope.$on('edit.mode.renderer', function (event, args) {
-                if((args.id || 'main') == (attrs.editModeRenderer || 'main')) {
+                if ((args.id || 'main') == (attrs.editModeRenderer || 'main')) {
                     if (args.open) {
                         el.html(args.templateUrl ? $templateCache.get(args.templateUrl) : args.template);
                         $compile(el.contents())(args.scope);

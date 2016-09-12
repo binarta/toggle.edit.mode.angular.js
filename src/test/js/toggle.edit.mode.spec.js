@@ -1,31 +1,36 @@
-angular.module('checkpoint', [])
-    .factory('activeUserHasPermission', function () {
-        return jasmine.createSpy('activeUserHasPermission');
-    });
-
 describe('toggle.edit.mode', function () {
+    beforeEach(module('binartajs-angular1-spec'));
     beforeEach(module('toggle.edit.mode'));
 
     describe('editMode service', function () {
-        var editMode, $rootScope, registry, topics, activeUserHasPermission;
+        var binarta, editMode, $rootScope, registry, topics;
 
-        beforeEach(inject(function (_editMode_, _$rootScope_, topicRegistryMock, topicMessageDispatcherMock, _activeUserHasPermission_) {
+        beforeEach(inject(function (_binarta_, _editMode_, _$rootScope_, topicRegistryMock, topicMessageDispatcherMock) {
+            binarta = _binarta_;
             editMode = _editMode_;
             $rootScope = _$rootScope_;
             registry = topicRegistryMock;
             topics = topicMessageDispatcherMock;
-            activeUserHasPermission = _activeUserHasPermission_;
+
+            binarta.checkpoint.registrationForm.submit({username: 'u', password: 'p'});
         }));
+        afterEach(function() {
+            binarta.checkpoint.gateway.removePermission('edit.mode');
+        });
 
         describe('on run', function () {
+            beforeEach(function() {
+                binarta.checkpoint.profile.refresh();
+            });
+
             it('check for permission', function () {
-               expect(activeUserHasPermission.calls.first().args[1]).toEqual('edit.mode');
-               expect(activeUserHasPermission.calls.first().args[0].scope).toEqual($rootScope);
+                expect($rootScope.editing).toEqual(false);
             });
 
             describe('when user has edit.mode permission', function () {
                 beforeEach(function () {
-                    activeUserHasPermission.calls.first().args[0].yes();
+                    binarta.checkpoint.gateway.addPermission('edit.mode'); // TODO - add support for this methid in in memory impl
+                    binarta.checkpoint.profile.refresh();
                 });
 
                 it('enable edit mode', function () {
@@ -36,10 +41,6 @@ describe('toggle.edit.mode', function () {
         });
 
         describe('edit mode is not enabled', function () {
-            beforeEach(function () {
-                activeUserHasPermission.calls.reset();
-            });
-
             it('service exists', function () {
                 expect(editMode).toBeDefined();
             });
@@ -140,22 +141,10 @@ describe('toggle.edit.mode', function () {
                     });
                 });
 
-                it('permission is passed to permission check', function () {
-                    registry['edit.mode'](true);
-
-                    expect(activeUserHasPermission.calls.first().args[1]).toEqual('permission');
-                });
-
-                it('scope is passed to permission check', function () {
-                    registry['edit.mode'](true);
-
-                    expect(activeUserHasPermission.calls.first().args[0].scope).toEqual(scope);
-                });
-
                 describe('when active user has no permission', function () {
                     beforeEach(function () {
                         registry['edit.mode'](true);
-                        activeUserHasPermission.calls.first().args[0].no();
+                        binarta.checkpoint.profile.refresh();
                     });
 
                     it('unbind click event', function () {
@@ -170,8 +159,9 @@ describe('toggle.edit.mode', function () {
                 describe('when active user has permission', function () {
                     describe('and edit.mode inactive received', function () {
                         beforeEach(function () {
+                            binarta.checkpoint.gateway.addPermission('edit.mode');
+                            binarta.checkpoint.profile.refresh();
                             registry['edit.mode'](false);
-                            activeUserHasPermission.calls.first().args[0].yes();
                         });
 
                         it('unbind click event', function () {
@@ -185,8 +175,9 @@ describe('toggle.edit.mode', function () {
 
                     describe('and edit.mode active received', function () {
                         beforeEach(function () {
+                            binarta.checkpoint.gateway.addPermission('edit.mode');
+                            binarta.checkpoint.profile.refresh();
                             registry['edit.mode'](true);
-                            activeUserHasPermission.calls.first().args[0].yes();
                         });
 
                         it('bind click event', function () {

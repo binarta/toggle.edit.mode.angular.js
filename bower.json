@@ -8,6 +8,7 @@
     "./sources.json"
   ],
   "dependencies": {
+    "binartajs-angular1": "1.*.*",
     "binarta.angularx": "0.*.*",
     "binarta.notifications.angular": "1.*.*"
   },
@@ -21,5 +22,8 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "angular": "1.5.*"
+  }
 }
