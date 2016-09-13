@@ -22,8 +22,10 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
     var dirtyItems = [];
 
     this.enable = function () {
-        $rootScope.editing = true;
-        topicMessageDispatcher.firePersistently('edit.mode', true);
+        if(!$rootScope.editing) {
+            $rootScope.editing = true;
+            topicMessageDispatcher.firePersistently('edit.mode', true);
+        }
     };
 
     this.disable = function () {

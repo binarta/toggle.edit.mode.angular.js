@@ -29,7 +29,7 @@ describe('toggle.edit.mode', function () {
 
             describe('when user has edit.mode permission', function () {
                 beforeEach(function () {
-                    binarta.checkpoint.gateway.addPermission('edit.mode'); // TODO - add support for this methid in in memory impl
+                    binarta.checkpoint.gateway.addPermission('edit.mode');
                     binarta.checkpoint.profile.refresh();
                 });
 
