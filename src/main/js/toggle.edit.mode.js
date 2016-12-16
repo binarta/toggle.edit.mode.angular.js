@@ -130,7 +130,7 @@ function EditModeRendererDirective($compile, $templateCache) {
 
 function ToggleEditModeDirectiveFactory($rootScope, editMode) {
     return {
-        restrict: ['E', 'A'],
+        restrict: 'EA',
         scope: true,
         link: function (scope) {
             scope.toggleEditMode = function () {

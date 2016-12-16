@@ -459,7 +459,7 @@ describe('toggle.edit.mode', function () {
         }));
 
         it('restricted to', function () {
-            expect(directive.restrict).toEqual(['E', 'A']);
+            expect(directive.restrict).toEqual('EA');
         });
 
         describe('on link', function () {
