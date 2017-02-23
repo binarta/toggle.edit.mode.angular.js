@@ -22,7 +22,7 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
     var dirtyItems = [];
 
     this.enable = function () {
-        if(!$rootScope.editing) {
+        if (!$rootScope.editing) {
             $rootScope.editing = true;
             topicMessageDispatcher.firePersistently('edit.mode', true);
         }
@@ -34,7 +34,7 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
 
     this.bindEvent = function (ctx) {
         ngRegisterTopicHandler(ctx.scope, 'edit.mode', function (editModeActive) {
-            if (binarta.checkpoint.profile.hasPermission('edit.mode'))
+            if (binarta.checkpoint.profile.hasPermission(ctx.permission || 'edit.mode'))
                 bind(editModeActive);
             else
                 unbind();

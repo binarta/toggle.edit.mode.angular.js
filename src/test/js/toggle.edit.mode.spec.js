@@ -135,7 +135,6 @@ describe('toggle.edit.mode', function () {
 
                     editMode.bindEvent({
                         scope: scope,
-                        permission: 'permission',
                         element: element,
                         onClick: onClick
                     });
@@ -203,6 +202,48 @@ describe('toggle.edit.mode', function () {
                                 expect(propagate).toEqual(false);
                             });
                         });
+                    });
+                });
+            });
+
+            describe('bind click event when user has specific permission', function () {
+                var scope, element, onClick;
+
+                beforeEach(function () {
+                    scope = $rootScope.$new();
+                    element = jasmine.createSpyObj('element', ['bind', 'unbind', 'addClass', 'removeClass']);
+                    onClick = jasmine.createSpy('callback');
+
+                    binarta.checkpoint.gateway.addPermission('edit.mode');
+                    binarta.checkpoint.profile.refresh();
+
+                    editMode.bindEvent({
+                        scope: scope,
+                        element: element,
+                        permission: 'permission',
+                        onClick: onClick
+                    });
+                });
+
+                describe('when active user has no permission', function () {
+                    beforeEach(function () {
+                        registry['edit.mode'](true);
+                    });
+
+                    it('unbind click event', function () {
+                        expect(element.unbind).toHaveBeenCalledWith('click');
+                    });
+                });
+
+                describe('when active user has permission', function () {
+                    beforeEach(function () {
+                        binarta.checkpoint.gateway.addPermission('permission');
+                        binarta.checkpoint.profile.refresh();
+                        registry['edit.mode'](true);
+                    });
+
+                    it('bind click event', function () {
+                        expect(element.bind.calls.first().args[0]).toEqual('click');
                     });
                 });
             });
