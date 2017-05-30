@@ -92,18 +92,26 @@ function EditModeRendererService($rootScope, ngRegisterTopicHandler) {
 
     this.open = function (args) {
         args.id = args.id || 'main';
+        destroyScope(args.id);
         scopes[args.id] = args.scope;
         args.open = true;
         $rootScope.$broadcast('edit.mode.renderer', args);
     };
     this.close = function (args) {
         var id = args && args.id ? args.id : 'main';
-        if (scopes[id]) scopes[id].$destroy();
+        destroyScope(id);
         $rootScope.$broadcast('edit.mode.renderer', {
             id: id,
             open: false
         });
     };
+
+    function destroyScope(id) {
+        if (scopes[id]) {
+            scopes[id].$destroy();
+            delete scopes[id];
+        }
+    }
 
     ngRegisterTopicHandler($rootScope, 'edit.mode', function (enabled) {
         if (!enabled) self.close();

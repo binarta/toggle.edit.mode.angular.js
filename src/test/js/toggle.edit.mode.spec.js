@@ -251,13 +251,14 @@ describe('toggle.edit.mode', function () {
     });
 
     describe('editModeRenderer service', function () {
-        var editModeRenderer, registry, scope, rendererScope, argsSpy;
+        var editModeRenderer, registry, scope, rendererScope1, rendererScope2, argsSpy;
 
         beforeEach(inject(function (_editModeRenderer_, topicRegistryMock, $rootScope) {
             editModeRenderer = _editModeRenderer_;
             registry = topicRegistryMock;
             scope = $rootScope.$new();
-            rendererScope = $rootScope.$new();
+            rendererScope1 = $rootScope.$new();
+            rendererScope2 = $rootScope.$new();
             argsSpy = {};
             scope.$on('edit.mode.renderer', function (event, args) {
                 argsSpy = args;
@@ -271,7 +272,7 @@ describe('toggle.edit.mode', function () {
         describe('on open', function () {
             beforeEach(function () {
                 editModeRenderer.open({
-                    scope: rendererScope,
+                    scope: rendererScope1,
                     template: 'template'
                 });
             });
@@ -280,8 +281,27 @@ describe('toggle.edit.mode', function () {
                 expect(argsSpy).toEqual({
                     id: 'main',
                     open: true,
-                    scope: rendererScope,
+                    scope: rendererScope1,
                     template: 'template'
+                });
+            });
+
+            describe('on open again', function () {
+                var destroyed;
+
+                beforeEach(function () {
+                    rendererScope1.$on('$destroy', function () {
+                        destroyed = true;
+                    });
+
+                    editModeRenderer.open({
+                        scope: rendererScope2,
+                        template: 'template'
+                    });
+                });
+
+                it('previous renderer scope is destroyed', function () {
+                    expect(destroyed).toBeTruthy();
                 });
             });
 
@@ -289,7 +309,7 @@ describe('toggle.edit.mode', function () {
                 var destroyed;
 
                 beforeEach(function () {
-                    rendererScope.$on('$destroy', function () {
+                    rendererScope1.$on('$destroy', function () {
                         destroyed = true;
                     });
 
@@ -325,7 +345,7 @@ describe('toggle.edit.mode', function () {
         describe('on open with templateUrl', function () {
             beforeEach(function () {
                 editModeRenderer.open({
-                    scope: rendererScope,
+                    scope: rendererScope1,
                     templateUrl: 'template.html'
                 });
             });
@@ -334,7 +354,7 @@ describe('toggle.edit.mode', function () {
                 expect(argsSpy).toEqual({
                     id: 'main',
                     open: true,
-                    scope: rendererScope,
+                    scope: rendererScope1,
                     templateUrl: 'template.html'
                 });
             });
@@ -343,13 +363,13 @@ describe('toggle.edit.mode', function () {
         it('open specific panel', function () {
             editModeRenderer.open({
                 id: 'C',
-                scope: rendererScope,
+                scope: rendererScope1,
                 template: 'template'
             });
             expect(argsSpy).toEqual({
                 id: 'C',
                 open: true,
-                scope: rendererScope,
+                scope: rendererScope1,
                 template: 'template'
             });
         });
