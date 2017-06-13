@@ -1,27 +1,25 @@
-[editmode="true"] .bin-editable {
-  position: relative;
+@import "../../binarta.style.guide/less/variables";
 
-  &:focus {
-    outline: #5bb75b solid 2px;
-  }
+.bin-editable {
+  position: relative;
+  min-width: 20px;
+  min-height: 20px;
+  cursor: pointer;
+
   &:after {
     content: ' ';
     display: block;
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-
-    transition: all 0.3s ease-out;
-    background-color: rgba(91, 183, 91, 0);
-    outline: rgba(91, 183, 91, 0) solid 2px;
+    left: -2px;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    transition: border-color 0.2s ease-out;
+    border: fade(@bin-success, 30%) dashed 2px;
+    border-radius: 3px;
   }
-  &:hover {
-    cursor: pointer;
-    &:after {
-      background-color: rgba(91, 183, 91, 0.2);
-      outline: #5bb75b solid 2px;
-    }
+
+  &:hover:after {
+    border-color: @bin-success;
   }
 }
