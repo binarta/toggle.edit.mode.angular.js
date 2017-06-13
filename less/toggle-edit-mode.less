@@ -10,16 +10,18 @@
     content: ' ';
     display: block;
     position: absolute;
-    left: -2px;
-    top: -2px;
-    right: -2px;
-    bottom: -2px;
-    transition: border-color 0.2s ease-out;
-    border: fade(@bin-success, 30%) dashed 2px;
-    border-radius: 3px;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    transition: border-color 0.2s ease-out, background-color 0.2s ease-out;
+    border: fade(@bin-success, 50%) dashed 1px;
+    border-radius: 2px;
+    background-color: fade(@bin-success, 0);
   }
 
   &:hover:after {
     border-color: @bin-success;
+    background-color: fade(@bin-success, 8%);
   }
 }
