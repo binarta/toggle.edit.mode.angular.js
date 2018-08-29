@@ -8,7 +8,7 @@
     "./sources.json"
   ],
   "dependencies": {
-    "binartajs-angular1": "1.*.*",
+    "binartajs-angular1": "publisher",
     "binarta.angularx": "0.*.*",
     "binarta.notifications.angular": "1.*.*"
   },
@@ -24,6 +24,8 @@
     "tests"
   ],
   "resolutions": {
-    "angular": "1.5.*"
+    "binartajs-angular1": "publisher",
+    "angular": "1.5.*",
+    "binartajs": "publisher"
   }
 }

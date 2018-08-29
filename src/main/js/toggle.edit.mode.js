@@ -25,6 +25,7 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
         if (!$rootScope.editing) {
             $rootScope.editing = true;
             topicMessageDispatcher.firePersistently('edit.mode', true);
+            binarta.application.lock.reserve();
         }
     };
 
@@ -62,6 +63,7 @@ function EditModeService($rootScope, ngRegisterTopicHandler, topicMessageDispatc
     function disableEditMode() {
         $rootScope.editing = false;
         topicMessageDispatcher.firePersistently('edit.mode', false);
+        binarta.application.lock.release();
     }
 
     function raiseLockedWarning() {
